@@ -27,7 +27,6 @@ Please continue to complete the function. You are not allowed to modify the give
 def generate_main(args):
     model_name_or_path = args.model_path
     lang = args.language
-    saved_path = args.output_path
     temp_dir = args.temp_dir
     os.makedirs(temp_dir, exist_ok=True)
     problem_file = os.path.join(data_abs_dir, f"humaneval-{lang}.jsonl")
@@ -78,6 +77,8 @@ def generate_main(args):
         generated_examples.append(example)
 
     print("Generate all over!!!")
+    os.makedirs(args.save_dir, exist_ok=True)
+    saved_path = os.path.join(args.save_dir, "results_humaneval.json")
     with open(saved_path, "w", encoding="utf-8") as fw:
         for ex in generated_examples:
             fw.write(json.dumps(ex) + "\n")
@@ -96,45 +97,6 @@ def generate_main(args):
         language=lang,
     )
     print(lang, result, model_name_or_path)
-    pass
-
-
-def evaluation_only(args):
-    lang = args.language
-    temp_dir = args.temp_dir
-    assert os.path.exists(args.output_path), "Not fond output file: {}".format(
-        args.output_path
-    )
-    os.makedirs(temp_dir, exist_ok=True)
-
-    output_name = os.path.basename(args.output_path)
-    output_examples = [json.loads(x) for x in open(args.output_path) if x.strip()]
-
-    processed_examples = [
-        extract_generation_code(ex, lang) for ex in tqdm(output_examples, "Processing")
-    ]
-    processed_path = os.path.join(temp_dir, output_name)
-    with open(processed_path, "w", encoding="utf-8") as fw:
-        for ex in processed_examples:
-            fw.write(json.dumps(ex) + "\n")
-        print(
-            "Save {} processed examples into {} over!".format(
-                len(processed_examples), processed_path
-            )
-        )
-
-    problem_file = os.path.join(data_abs_dir, f"humaneval-{lang}.jsonl")
-    from human_eval.evaluation import evaluate_functional_correctness
-
-    result = evaluate_functional_correctness(
-        input_file=processed_path,
-        tmp_dir=temp_dir,
-        n_workers=8,
-        timeout=3.0,
-        problem_file=problem_file,
-        language=lang,
-    )
-    print(lang, result)
 
 
 if __name__ == "__main__":
@@ -149,10 +111,10 @@ if __name__ == "__main__":
         "--gpus_num", type=int, default=1, help="the number of GPUs you want to use."
     )
     parser.add_argument(
-        "--output_path",
+        "--save_dir",
         type=str,
         help="output path of your generation",
-        default="outputs/qwen2-sft.json",
+        default="outputs",
     )
     parser.add_argument("--language", type=str, help="langauge", default="python")
     parser.add_argument(

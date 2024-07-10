@@ -71,7 +71,6 @@ def convert_for_evaluation(example):
 
 def generate_main(args):
     model_name_or_path = args.model_path
-    saved_path = args.output_path
     temp_dir = args.temp_dir
     os.makedirs(temp_dir, exist_ok=True)
     problem_file = os.path.join(data_abs_dir, f"mbpp.jsonl")
@@ -117,6 +116,8 @@ def generate_main(args):
         generated_examples.append(example)
 
     print("Generate all over!!!")
+    os.makedirs(args.save_dir, exist_ok=True)
+    saved_path = os.path.join(args.save_dir, "results_mbpp.json")
     with open(saved_path, "w", encoding="utf-8") as fw:
         for ex in generated_examples:
             fw.write(json.dumps(ex) + "\n")
@@ -149,10 +150,10 @@ if __name__ == "__main__":
         "--gpus_num", type=int, default=1, help="the number of GPUs you want to use."
     )
     parser.add_argument(
-        "--output_path",
+        "--save_dir",
         type=str,
         help="output path of your generation",
-        default="outputs/qwen2-mbpp.json",
+        default="outputs",
     )
     parser.add_argument(
         "--temp_dir", type=str, help="temp dir for evaluation", default="tmp"

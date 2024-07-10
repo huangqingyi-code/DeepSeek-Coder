@@ -176,7 +176,7 @@ class Evaluator:
         if self.args.save_dir is not None:
             os.makedirs(self.args.save_dir, exist_ok=True)
             with open(
-                os.path.join(self.args.save_dir, "results.json"),
+                os.path.join(self.args.save_dir, f"results_{args.task}.json"),
                 "w",
                 encoding="utf-8",
                 newline="\n",
@@ -184,7 +184,7 @@ class Evaluator:
                 json.dump(results, f, indent=2)
 
             with open(
-                os.path.join(self.args.save_dir, "results.log"),
+                os.path.join(self.args.save_dir, f"results_{args.task}.log"),
                 "w",
                 encoding="utf-8",
                 newline="\n",
