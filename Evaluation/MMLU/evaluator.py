@@ -12,6 +12,7 @@ import transformers
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 from pathlib import Path
+import shutil
 
 # from ..data import get_template_and_fix_tokenizer
 
@@ -23,6 +24,21 @@ SUBJECTS = ["Average", "STEM", "Social Sciences", "Humanities", "Other"]
 
 
 data_abs_dir = Path(__file__).parent / "data"
+
+
+def create_dir(output_dir):
+    if os.path.exists(output_dir):
+        if not os.access(output_dir, os.W_OK):
+            shutil.rmtree(output_dir)
+            os.makedirs(output_dir)
+            os.chmod(output_dir, 0o777)
+            print("not write permission, makedir:", output_dir)
+        else:
+            print(f"{output_dir} exists!")
+    else:
+        os.makedirs(output_dir)
+        os.chmod(output_dir, 0o777)
+        print("makedir:", output_dir)
 
 
 class Evaluator:
@@ -174,7 +190,8 @@ class Evaluator:
         )
         print(score_info)
         if self.args.save_dir is not None:
-            os.makedirs(self.args.save_dir, exist_ok=True)
+            # os.makedirs(self.args.save_dir, exist_ok=True)
+            create_dir(self.args.save_dir)
             with open(
                 os.path.join(self.args.save_dir, f"results_{args.task}.json"),
                 "w",

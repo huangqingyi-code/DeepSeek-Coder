@@ -6,11 +6,26 @@ import re
 from pathlib import Path
 from tqdm import tqdm
 from vllm import LLM, SamplingParams
-
+import shutil
 data_abs_dir = Path(__file__).parent / "data"
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from human_eval.evaluation import evaluate_functional_correctness
+
+
+def create_dir(output_dir):
+    if os.path.exists(output_dir):
+        if not os.access(output_dir, os.W_OK):
+            shutil.rmtree(output_dir)
+            os.makedirs(output_dir)
+            os.chmod(output_dir, 0o777)
+            print("not write permission, makedir:", output_dir)
+        else:
+            print(f"{output_dir} exists!")
+    else:
+        os.makedirs(output_dir)
+        os.chmod(output_dir, 0o777)
+        print("makedir:", output_dir)
 
 
 def read_test_examples(data_path: str):
@@ -72,7 +87,8 @@ def convert_for_evaluation(example):
 def generate_main(args):
     model_name_or_path = args.model_path
     temp_dir = args.temp_dir
-    os.makedirs(temp_dir, exist_ok=True)
+    create_dir(temp_dir)
+    # os.makedirs(temp_dir, exist_ok=True)
     problem_file = os.path.join(data_abs_dir, f"mbpp.jsonl")
 
     print("model", model_name_or_path)
@@ -116,7 +132,8 @@ def generate_main(args):
         generated_examples.append(example)
 
     print("Generate all over!!!")
-    os.makedirs(args.save_dir, exist_ok=True)
+    # os.makedirs(args.save_dir, exist_ok=True)
+    create_dir(args.save_dir)
     saved_path = os.path.join(args.save_dir, "results_mbpp.json")
     with open(saved_path, "w", encoding="utf-8") as fw:
         for ex in generated_examples:
@@ -135,7 +152,6 @@ def generate_main(args):
         is_mbpp=True,
     )
     print(result, model_name_or_path)
-    pass
 
 
 if __name__ == "__main__":
